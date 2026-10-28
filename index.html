@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VoltDrive Analytics – EV Market Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#F1F5F9;--card:#fff;--tx:#0B1220;--mut:#475569;--bd:#e2e8f0;--blue:#0F766E;--teal:#84CC16;--nav:#0B1220;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme=dark]{--bg:#0B1220;--card:#131c31;--tx:#F1F5F9;--mut:#94a3b8;--bd:#25314d;--nav:#070c17}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0B1220;--card:#131c31;--tx:#F1F5F9;--mut:#94a3b8;--bd:#25314d;--nav:#070c17}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.5}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--nav);display:flex;align-items:center;gap:6px;padding:10px 20px;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#0B1220;z-index:21}
+.logo{color:#fff;font-weight:800;font-size:20px;margin-right:auto;text-decoration:none}.logo b{color:var(--teal)}
+nav a.l{color:#cbd5e1;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;transition:.2s}
+nav a.l:hover{background:#1e293b;color:#fff}nav a.l.on{background:var(--blue);color:#fff}
+.btn{border:0;border-radius:10px;padding:10px 18px;font:600 14px Inter;cursor:pointer;background:var(--blue);color:#fff;text-decoration:none;display:inline-block;transition:.2s}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}.btn.g{background:transparent;border:1px solid #64748b;color:#fff}.btn.s{padding:7px 12px;font-size:13px}
+#burger{display:none;background:none;border:1px solid #334155;color:#fff;border-radius:8px;padding:6px 10px;font-size:18px}
+main{max-width:1250px;margin:0 auto;padding:20px}
+h1{font-size:28px;margin:6px 0}h2{font-size:18px;margin:0 0 10px}.sub{color:var(--mut);margin:0 0 16px}
+.hero{background:linear-gradient(135deg,#082f49,#0f766e 58%,#365314);color:#fff;border-radius:20px;padding:44px 32px;display:grid;grid-template-columns:1.1fr 1fr;gap:20px;align-items:center}
+.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.1}.hero p{color:#cbd5e1;font-size:17px}
+.grid{display:grid;gap:14px}.k{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:16px 0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:0;transition:.2s}
+.card:hover{box-shadow:0 6px 18px rgba(15,118,110,.14)}
+.kpi .v{font-size:26px;font-weight:800;color:var(--blue)}.kpi .t{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.ch{position:relative;height:290px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:12px;margin:12px 0}
+.bar label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+select,input[type=search],input[type=range]{font:14px Inter;padding:7px 9px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{cursor:pointer;color:var(--mut);font-size:12px;text-transform:uppercase;user-select:none}th:hover{color:var(--blue)}
+tbody tr{cursor:pointer}tbody tr:hover,tr.sel{background:rgba(15,118,110,.12)}
+.tw{overflow-x:auto}.tag{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;background:rgba(20,184,166,.18);color:var(--teal)}
+.tag.e{background:rgba(245,158,11,.18);color:#d97706}.tag.p{background:rgba(139,92,246,.18);color:#8b5cf6}
+.empty{text-align:center;padding:50px;color:var(--mut)}.note{font-size:12px;color:var(--mut)}
+.ins li{margin:7px 0}svg text{fill:var(--mut);font:11px Inter}
+.bt button{margin:2px}.bt .on{background:var(--teal)}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,tr:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+@media(max-width:860px){.hero{grid-template-columns:1fr;padding:28px 20px}#burger{display:block}nav .m{display:none;width:100%;flex-direction:column}nav.open .m{display:flex}main{padding:12px}}
+</style></head><body>
+<nav id="nav"><a class="logo" href="#home">Volt<b>Drive</b> ⚡</a><button id="burger" aria-label="Menu" onclick="nav.classList.toggle('open')">☰</button>
+<span class="m" style="display:contents" id="links"></span><button class="btn s g" id="th" aria-label="Toggle dark/light mode">◐ Theme</button></nav>
+<main id="app"><div class="empty">Loading dataset…</div></main>
+<script>
+"use strict";
+const $=s=>document.querySelector(s),COL=['#2563EB','#14B8A6','#F59E0B','#8B5CF6','#EF4444','#22C55E','#EC4899','#64748B','#06B6D4','#A3E635'];
+const PAGES=[['home','Home'],['dashboard','Dashboard'],['manufacturers','Manufacturers'],['battery','Battery Technology'],['global','Global Insights'],['sustainability','Sustainability'],['about','About']];
+$('#links').outerHTML='<span class="m" id="links" style="display:contents">'+PAGES.map(p=>`<a class="l" href="#${p[0]}" data-p="${p[0]}">${p[1]}</a>`).join('')+'</span>';
+// ---------- DATA (synthetic) ----------
+let seed=42;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const MF={Voltara:'US',Auron:'DE',Kaito:'JP',Hanryu:'KR',Zephyr:'CN',Lumen:'CN',Nordvik:'SE',Tessera:'IN',Alba:'FR',Meridian:'US'};
+// [mfr, model, category, battery, kWh2020, range2020, price2020, baseSales2020, growth/yr, rating, startYear]
+const M=[['Voltara','V-One','Sedan','NCA',75,480,52000,180000,1.22,4.5,2020],['Voltara','V-Terra','SUV','NCA',85,500,62000,120000,1.3,4.4,2020],['Voltara','V-Compact','Compact','LFP',55,380,34000,60000,1.35,4.2,2021],
+['Auron','A-Sedan','Sedan','NMC',77,470,56000,90000,1.18,4.3,2020],['Auron','A-Cross','SUV','NMC',82,450,58000,110000,1.2,4.2,2020],['Auron','A-City','Hatchback','NMC',45,310,30000,70000,1.15,4.1,2020],
+['Kaito','K-Hatch','Hatchback','NMC',40,290,28000,65000,1.12,4.3,2020],['Kaito','K-Pioneer','Sedan','Solid-State',70,600,95000,500,2.2,4.6,2025],['Kaito','K-Trail','SUV','NMC',72,430,48000,60000,1.17,4.4,2020],
+['Hanryu','H-Wave','SUV','NMC',77,420,45000,85000,1.24,4.3,2020],['Hanryu','H-Spark','Compact','NMC',42,300,27000,50000,1.2,4.0,2020],
+['Zephyr','Z-Star','Sedan','LFP',60,420,30000,150000,1.38,4.1,2020],['Zephyr','Z-Max','SUV','LFP',80,500,42000,140000,1.36,4.2,2020],['Zephyr','Z-Mini','Compact','LFP',30,250,12000,200000,1.3,3.9,2020],
+['Lumen','L-Glide','Sedan','LFP',65,450,36000,100000,1.3,4.0,2020],['Lumen','L-Haul','Truck','NMC',100,420,55000,25000,1.35,4.0,2021],
+['Nordvik','N-Estate','SUV','NMC',78,460,54000,40000,1.15,4.6,2020],['Nordvik','N-Volt','Sedan','NMC',70,440,50000,30000,1.14,4.7,2020],
+['Tessera','T-Rickshaw','Compact','LFP',25,200,9000,30000,1.4,3.8,2020],['Tessera','T-Nano','Hatchback','Sodium-Ion',35,260,11000,2000,2.1,3.9,2024],['Tessera','T-Pickup','Truck','LFP',70,380,24000,5000,1.5,3.9,2021],
+['Alba','Al-Urbain','Hatchback','LFP',48,320,25000,55000,1.18,4.0,2020],['Alba','Al-Voyage','Sedan','NMC',68,430,42000,35000,1.12,4.1,2020],
+['Meridian','M-Ranger','Truck','NMC',130,480,68000,60000,1.28,4.2,2021],['Meridian','M-Sprint','Sedan','NCA',70,440,46000,55000,1.18,4.1,2020]];
+const D=[];M.forEach(m=>{for(let y=Math.max(2020,m[10]);y<=2025;y++){const i=y-2020,j=y-m[10]+(m[10]>2020?0:0);const g=m[10]>2020?Math.pow(m[8],y-m[10]):Math.pow(m[8],i);const base=m[10]>2020?m[7]:m[7];
+D.push({model:m[1],mfr:m[0],cat:m[2],country:MF[m[0]],year:y,sales:Math.round(base*g*(.93+rnd()*.14)),bat:m[3],kwh:+(m[4]*(1+.02*i)).toFixed(1),range:Math.round(m[5]*(1+.04*i)),charge:Math.round(45-i*2.5+rnd()*5),price:Math.round(m[6]*(1-.015*i)/100)*100,rating:Math.min(5,+(m[9]+(rnd()-.5)*.2).toFixed(1))})}});
+const YRS=[2020,2021,2022,2023,2024,2025],CC={US:[-98,39],CN:[104,35],DE:[10,51],JP:[138,36],KR:[127,36],SE:[15,62],IN:[78,22],FR:[2,47]};
+const CN={US:'United States',CN:'China',DE:'Germany',JP:'Japan',KR:'South Korea',SE:'Sweden',IN:'India',FR:'France'};
+const REG={US:'North America',CN:'Asia-Pacific',JP:'Asia-Pacific',KR:'Asia-Pacific',IN:'Asia-Pacific',DE:'Europe',SE:'Europe',FR:'Europe'};
+const BT={LFP:{n:'Lithium Iron Phosphate',ed:'160–205 Wh/kg',cost:'$70–100/kWh',chg:'30–45 min (10–80%)',life:'3,000–6,000 cycles',st:'Measured (typical ranges)',sc:[5,9,6,9,9,6]},
+NMC:{n:'Nickel Manganese Cobalt',ed:'200–280 Wh/kg',cost:'$100–140/kWh',chg:'20–35 min',life:'1,000–2,000 cycles',st:'Measured (typical ranges)',sc:[8,6,8,6,6,8]},
+NCA:{n:'Nickel Cobalt Aluminum',ed:'220–280 Wh/kg',cost:'$105–145/kWh',chg:'25–40 min',life:'1,000–1,500 cycles',st:'Measured (typical ranges)',sc:[9,5,7,5,5,9]},
+'Sodium-Ion':{n:'Sodium-Ion',ed:'100–160 Wh/kg',cost:'$60–90/kWh (est.)',chg:'15–30 min (est.)',life:'2,000–4,000 cycles (est.)',st:'Estimate – early commercial',sc:[3,10,8,7,8,4]},
+'Solid-State':{n:'Solid-State',ed:'300–400 Wh/kg (proj.)',cost:'>$150/kWh (proj.)',chg:'10–20 min (proj.)',life:'1,000–5,000 cycles (proj.)',st:'Projection – emerging',sc:[10,2,10,8,10,10]}};
+const AX=['Energy density','Affordability','Charging speed','Lifespan','Safety','Range potential'];
+// ---------- STATE ----------
+const F={year:'all',mfr:'all',cat:'all',country:'all',bat:'all',price:100000};let CMP=[],PROF=null,SORT={k:'sales',d:-1},Q='',CH={},BSEL=['LFP','NMC'];
+const uniq=k=>[...new Set(D.map(r=>r[k]))].sort(),sum=(a,f)=>a.reduce((s,r)=>s+f(r),0),avg=(a,f)=>a.length?sum(a,f)/a.length:0,fmt=n=>Math.round(n).toLocaleString('en-US');
+const filt=(skipYear)=>D.filter(r=>(skipYear||F.year==='all'||r.year==+F.year)&&(F.mfr==='all'||r.mfr===F.mfr)&&(F.cat==='all'||r.cat===F.cat)&&(F.country==='all'||r.country===F.country)&&(F.bat==='all'||r.bat===F.bat)&&r.price<=F.price);
+const grp=(a,k,f)=>{const m={};a.forEach(r=>(m[r[k]]=m[r[k]]||[]).push(r));return Object.entries(m).map(([k,v])=>[k,f(v),v])};
+const wavg=(a,f)=>{const s=sum(a,r=>r.sales);return s?sum(a,r=>f(r)*r.sales)/s:0};
+// ---------- UI helpers ----------
+const th=()=>document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);
+function mk(id,cfg){if(CH[id])CH[id].destroy();const c=document.getElementById(id);if(!c)return;const dk=th();const tc=dk?'#94a3b8':'#475569',gc=dk?'#25314d':'#e2e8f0';
+cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}}}},cfg.options||{});
+if(cfg.options.scales)Object.values(cfg.options.scales).forEach(s=>{s.ticks=Object.assign({color:tc},s.ticks);s.grid=Object.assign({color:gc},s.grid);if(s.title)s.title.color=tc;if(s.pointLabels)s.pointLabels.color=tc;if(s.angleLines)s.angleLines.color=gc});
+CH[id]=new Chart(c,cfg)}
+const sel=(id,l,opts,v)=>`<label>${l}<select id="${id}">${opts.map(o=>{const[a,b]=Array.isArray(o)?o:[o,o];return`<option value="${a}"${String(v)===String(a)?' selected':''}>${b}</option>`}).join('')}</select></label>`;
+const filterBar=()=>`<div class="card bar" role="search" aria-label="Filters">${sel('f-year','Year',[['all','All years'],...YRS],F.year)}${sel('f-mfr','Manufacturer',[['all','All'],...uniq('mfr')],F.mfr)}${sel('f-cat','Category',[['all','All'],...uniq('cat')],F.cat)}${sel('f-country','Country',[['all','All'],...uniq('country').map(c=>[c,CN[c]])],F.country)}${sel('f-bat','Battery',[['all','All'],...uniq('bat')],F.bat)}
+<label>Max price: $<span id="pv">${fmt(F.price)}</span><input type="range" id="f-price" min="10000" max="100000" step="1000" value="${F.price}"></label><button class="btn s" id="reset">Reset</button><button class="btn s" id="csv">⬇ Export CSV</button></div>`;
+function bindBar(){['year','mfr','cat','country','bat'].forEach(k=>{const e=$('#f-'+k);if(e)e.onchange=()=>{F[k]=e.value;route()}});const p=$('#f-price');if(p){p.oninput=()=>$('#pv').textContent=fmt(p.value);p.onchange=()=>{F.price=+p.value;route()}}
+$('#reset').onclick=()=>{Object.assign(F,{year:'all',mfr:'all',cat:'all',country:'all',bat:'all',price:100000});route()};
+$('#csv').onclick=()=>{const r=filt();if(!r.length)return alert('No records match the current filters.');const h=Object.keys(r[0]);const t=[h.join(','),...r.map(x=>h.map(k=>x[k]).join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='ev-filtered-sample-data.csv';a.click()}}
+const kpi=(t,v)=>`<div class="card kpi"><div class="t">${t}</div><div class="v">${v}</div></div>`;
+const EMPTY=`<div class="card empty"><h2>No records match these filters</h2><p>Try widening the price range or resetting the filters.</p></div>`;
+const SRC=`<p class="note">Data: synthetic demonstration dataset, 2020–2025, units = vehicles/year, km (range), kWh, USD. Fictional manufacturers; not real market statistics. KPIs and charts are computed from the same filtered dataset.</p>`;
+function kpis(r){const lm=grp(r,'mfr',v=>sum(v,x=>x.sales)).sort((a,b)=>b[1]-a[1])[0],lb=grp(r,'bat',v=>sum(v,x=>x.sales)).sort((a,b)=>b[1]-a[1])[0];
+return{sales:sum(r,x=>x.sales),models:new Set(r.map(x=>x.model)).size,mfrs:new Set(r.map(x=>x.mfr)).size,kwh:wavg(r,x=>x.kwh),range:wavg(r,x=>x.range),rating:wavg(r,x=>x.rating),lm:lm?lm[0]:'—',lb:lb?lb[0]:'—'}}
+// ---------- PAGES ----------
+const car=`<svg viewBox="0 0 400 180" role="img" aria-label="Stylised electric car illustration"><defs><linearGradient id="cg" x1="0" x2="1"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#14B8A6"/></linearGradient></defs><path d="M30 120c0-18 10-28 30-32l60-30c30-14 100-14 130 0l50 26c30 4 50 12 50 36v10H30z" fill="url(#cg)"/><path d="M130 66c25-10 80-10 105 0l30 22H105z" fill="#0B1220" opacity=".55"/><circle cx="105" cy="132" r="26" fill="#0B1220"/><circle cx="105" cy="132" r="11" fill="#cbd5e1"/><circle cx="295" cy="132" r="26" fill="#0B1220"/><circle cx="295" cy="132" r="11" fill="#cbd5e1"/><path d="M20 158h360" stroke="#14B8A6" stroke-width="3" stroke-dasharray="8 8" opacity=".6"/><path d="M200 24l-14 24h14l-8 20 24-28h-14l10-16z" fill="#F59E0B"/></svg>`;
+function home(){const k=kpis(D);return`<section class="hero"><div><span class="tag">VoltDrive Analytics</span><h1>Powering the Future of Electric Mobility.</h1><p>Explore EV market trends, battery innovation, manufacturer performance, and sustainable transportation through data-driven insights.</p><a class="btn" href="#dashboard">Explore Dashboard</a> <a class="btn g" href="#insights-anchor" onclick="location.hash='#dashboard';return false">View Market Insights</a></div><div>${car}</div></section>
+<div class="grid k">${kpi('Total EV Sales (2020–25)',fmt(k.sales))}${kpi('Manufacturers',k.mfrs)}${kpi('Avg Driving Range',fmt(k.range)+' km')}${kpi('Avg Customer Rating',k.rating.toFixed(2)+' / 5')}${kpi('Leading Battery Tech',k.lb)}</div>${SRC}`}
+function dashboard(){const r=filt();let h=`<h1>Interactive Market Dashboard</h1><p class="sub">Every KPI, chart and insight responds to the filters below.</p>`+filterBar();if(!r.length)return h+EMPTY;const k=kpis(r);
+h+=`<div class="grid k">${kpi('Total EV Sales',fmt(k.sales))}${kpi('EV Models',k.models)}${kpi('Avg Battery (kWh)',k.kwh.toFixed(1))}${kpi('Avg Range (km)',fmt(k.range))}${kpi('Avg Rating',k.rating.toFixed(2))}${kpi('Top Manufacturer',k.lm)}</div>
+<div class="grid g2">${[['c1','Annual EV sales trend'],['c2','Sales by vehicle category'],['c3','Manufacturer market share'],['c4','Battery technology distribution'],['c5','Driving range by category (km)'],['c6','Customer satisfaction by manufacturer'],['c8','Battery capacity vs driving range']].map(c=>`<div class="card"><h2>${c[1]}</h2><div class="ch"><canvas id="${c[0]}" role="img" aria-label="${c[1]}"></canvas></div></div>`).join('')}
+<div class="card"><h2>Manufacturing country distribution</h2>${mapSvg(r)}</div></div><div class="card" style="margin-top:14px"><h2>🤖 Market Insights <span class="tag e">rule-based, computed from filtered data</span></h2><ul class="ins">${insights(r)}</ul></div>${SRC}`;return h}
+function dashCharts(){const r=filt();if(!r.length)return;const base=filt(true);
+const tr=YRS.map(y=>sum(base.filter(x=>x.year===y),x=>x.sales));mk('c1',{type:'line',data:{labels:YRS,datasets:[{label:'Sales',data:tr,borderColor:COL[0],backgroundColor:'rgba(37,99,235,.15)',fill:true,tension:.3}]}});
+const c=grp(r,'cat',v=>sum(v,x=>x.sales));mk('c2',{type:'bar',data:{labels:c.map(x=>x[0]),datasets:[{label:'Sales',data:c.map(x=>x[1]),backgroundColor:COL[1]}]},options:{plugins:{legend:{display:false}}}});
+const m=grp(r,'mfr',v=>sum(v,x=>x.sales)).sort((a,b)=>b[1]-a[1]);mk('c3',{type:'doughnut',data:{labels:m.map(x=>x[0]),datasets:[{data:m.map(x=>x[1]),backgroundColor:COL}]}});
+const b=grp(r,'bat',v=>sum(v,x=>x.sales));mk('c4',{type:'pie',data:{labels:b.map(x=>x[0]),datasets:[{data:b.map(x=>x[1]),backgroundColor:COL.slice(2)}]}});
+const rg=grp(r,'cat',v=>wavg(v,x=>x.range));mk('c5',{type:'bar',data:{labels:rg.map(x=>x[0]),datasets:[{label:'Avg range (km)',data:rg.map(x=>Math.round(x[1])),backgroundColor:COL[3]}]},options:{indexAxis:'y',plugins:{legend:{display:false}}}});
+const rt=grp(r,'mfr',v=>wavg(v,x=>x.rating)).sort((a,b)=>b[1]-a[1]);mk('c6',{type:'bar',data:{labels:rt.map(x=>x[0]),datasets:[{label:'Rating',data:rt.map(x=>+x[1].toFixed(2)),backgroundColor:COL[2]}]},options:{scales:{y:{min:3,max:5}},plugins:{legend:{display:false}}}});
+const bs=grp(r,'bat',v=>v);mk('c8',{type:'scatter',data:{datasets:bs.map((x,i)=>({label:x[0],data:x[1].map(q=>({x:q.kwh,y:q.range})),backgroundColor:COL[i+2],pointRadius:4}))},options:{scales:{x:{title:{display:true,text:'Battery kWh'}},y:{title:{display:true,text:'Range km'}}}}})}
+function mapSvg(r){const cs=grp(r,'country',v=>sum(v,x=>x.sales)),mx=Math.max(...cs.map(c=>c[1]));
+const land=['M60 70l90-30 70 10 20 50-30 60-50 30-60-30z','M230 190l50 10 20 80-30 40-40-50z','M340 60l60-20 40 30-20 40-50 10z','M350 130l60 10 30 70-40 70-50-50z','M450 50l200 10 50 50-60 70-90 10-60-40z','M610 220l60 10 20 40-60 10z'];
+return`<svg viewBox="0 0 720 360" style="width:100%;height:auto" role="img" aria-label="World map of manufacturing volume by country">${land.map(p=>`<path d="${p}" fill="var(--bd)" opacity=".6"/>`).join('')}${[-60,0,60].map(l=>`<line x1="0" x2="720" y1="${(90-l)*2}" y2="${(90-l)*2}" stroke="var(--bd)" stroke-dasharray="3 5"/>`).join('')}
+${cs.map(([c,v],i)=>{const[x,y]=CC[c];return`<g tabindex="0"><circle cx="${(x+180)*2}" cy="${(90-y)*2}" r="${8+30*Math.sqrt(v/mx)}" fill="${COL[i%10]}" opacity=".6" stroke="#fff"><title>${CN[c]}: ${fmt(v)} vehicles</title></circle><text x="${(x+180)*2}" y="${(90-y)*2+4}" text-anchor="middle" style="fill:var(--tx);font-weight:700">${c}</text></g>`}).join('')}</svg><p class="note">Schematic map; bubble area ∝ vehicles produced. Hover for values.</p>`}
+function insights(r){const L=[],cur=r.filter(x=>x.year===(F.year==='all'?2025:+F.year)),tot=sum(cur,x=>x.sales)||1;
+const m=grp(cur,'mfr',v=>sum(v,x=>x.sales)).sort((a,b)=>b[1]-a[1]);if(m[0])L.push(`<b>${m[0][0]}</b> leads with ${(m[0][1]/tot*100).toFixed(1)}% share${m[1]?`, ahead of ${m[1][0]} (${(m[1][1]/tot*100).toFixed(1)}%)`:''}.`);
+const base=filt(true),g=grp(base,'cat',v=>{const a=sum(v.filter(x=>x.year===2020),x=>x.sales),b=sum(v.filter(x=>x.year===2025),x=>x.sales);return a?Math.pow(b/a,.2)-1:0}).sort((a,b)=>b[1]-a[1]);if(g[0]&&g[0][1]>0)L.push(`Fastest-growing category (2020–25 CAGR): <b>${g[0][0]}</b> at ${(g[0][1]*100).toFixed(0)}% per year.`);
+const bs=(y)=>{const a=base.filter(x=>x.year===y),t=sum(a,x=>x.sales)||1;return Object.fromEntries(grp(a,'bat',v=>sum(v,x=>x.sales)/t))},b0=bs(2020),b5=bs(2025),d=Object.keys(b5).map(k=>[k,(b5[k]||0)-(b0[k]||0)]).sort((a,b)=>b[1]-a[1]);if(d[0])L.push(`Battery tech gaining most share since 2020: <b>${d[0][0]}</b> (${d[0][1]>=0?'+':''}${(d[0][1]*100).toFixed(1)} pts).`);
+const v=[...cur].sort((a,b)=>b.range/b.price-a.range/a.price)[0];if(v)L.push(`Best range per dollar: <b>${v.model}</b> (${v.mfr}) – ${v.range} km at $${fmt(v.price)}.`);
+const rc=grp(cur,'cat',x=>wavg(x,y=>y.rating)).sort((a,b)=>b[1]-a[1]);if(rc.length>1)L.push(`Satisfaction spread: <b>${rc[0][0]}</b> (${rc[0][1].toFixed(2)}) vs <b>${rc.at(-1)[0]}</b> (${rc.at(-1)[1].toFixed(2)}).`);
+const co=grp(cur,'country',x=>sum(x,y=>y.sales)).sort((a,b)=>b[1]-a[1]);if(co.length>1)L.push(`Production is concentrated: top 2 countries (${CN[co[0][0]]}, ${CN[co[1][0]]}) make ${((co[0][1]+co[1][1])/tot*100).toFixed(0)}% of volume.`);
+return L.map(x=>`<li>${x}</li>`).join('')}
+function mfrRows(){const r=filt();let rows=grp(r,'mfr',v=>v).map(([n,,v])=>({n,c:MF[n],sales:sum(v,x=>x.sales),range:wavg(v,x=>x.range),kwh:wavg(v,x=>x.kwh),pmin:Math.min(...v.map(x=>x.price)),pmax:Math.max(...v.map(x=>x.price)),rating:wavg(v,x=>x.rating),models:new Set(v.map(x=>x.model)).size,y:v}));
+const T=sum(rows,x=>x.sales)||1;rows.forEach(x=>x.share=x.sales/T*100);const qq=Q.toLowerCase();
+if(qq)rows=rows.filter(x=>x.n.toLowerCase().includes(qq)||x.y.some(y=>y.model.toLowerCase().includes(qq)));
+rows.sort((a,b)=>(typeof a[SORT.k]==='string'?a[SORT.k].localeCompare(b[SORT.k]):a[SORT.k]-b[SORT.k])*SORT.d);return rows}
+function manufacturers(){let h=`<h1>Manufacturer Comparison</h1><p class="sub">Click rows to compare up to 3 manufacturers; click headers to sort.</p>`+filterBar()+`<div class="card bar"><label>Search manufacturers / models<input type="search" id="q" value="${Q.replace(/"/g,'')}" placeholder="e.g. Zephyr or V-One"></label></div>`;const rows=mfrRows();if(!rows.length)return h+EMPTY;
+const H=[['n','Manufacturer'],['c','Country'],['sales','Sales'],['share','Share %'],['range','Range km'],['kwh','kWh'],['pmin','Price range'],['rating','Rating'],['models','Models']];
+h+=`<div class="card tw"><table><thead><tr><th>#</th>${H.map(c=>`<th data-k="${c[0]}" tabindex="0">${c[1]}${SORT.k===c[0]?SORT.d>0?' ▲':' ▼':''}</th>`).join('')}</tr></thead><tbody>${rows.map((x,i)=>`<tr data-n="${x.n}" tabindex="0" class="${CMP.includes(x.n)?'sel':''}"><td>${i+1}</td><td><b>${x.n}</b> ${i<3&&SORT.k==='sales'&&SORT.d<0?'<span class="tag">Leader</span>':x.share<6&&x.sales/Math.max(1,sum(x.y.filter(y=>y.year===2020),y=>y.sales))>3?'<span class="tag p">Emerging</span>':''}</td><td>${CN[x.c]}</td><td>${fmt(x.sales)}</td><td>${x.share.toFixed(1)}</td><td>${fmt(x.range)}</td><td>${x.kwh.toFixed(1)}</td><td>$${fmt(x.pmin/1000)}k–${fmt(x.pmax/1000)}k</td><td>${x.rating.toFixed(2)}</td><td>${x.models}</td></tr>`).join('')}</tbody></table></div>`;
+const cm=rows.filter(x=>CMP.includes(x.n));if(cm.length)h+=`<div class="grid g2" style="margin-top:14px"><div class="card"><h2>Side-by-side</h2><div class="tw"><table><tr><th></th>${cm.map(x=>`<th>${x.n}</th>`).join('')}</tr>${[['Sales',x=>fmt(x.sales)],['Share %',x=>x.share.toFixed(1)],['Range km',x=>fmt(x.range)],['Battery kWh',x=>x.kwh.toFixed(1)],['Rating',x=>x.rating.toFixed(2)],['Avg price',x=>'$'+fmt(wavg(x.y,y=>y.price))]].map(([l,f])=>`<tr><td>${l}</td>${cm.map(x=>`<td>${f(x)}</td>`).join('')}</tr>`).join('')}</table></div></div><div class="card"><h2>Normalised comparison</h2><div class="ch"><canvas id="cmp"></canvas></div></div></div>`;
+const pr=rows.find(x=>x.n===PROF);if(pr){const ms=grp(pr.y,'model',v=>v);h+=`<div class="card" style="margin-top:14px"><h2>${pr.n} – profile</h2><p>Production location: <b>${CN[pr.c]}</b> (${REG[pr.c]}). Models in current filter:</p><div class="tw"><table><tr><th>Model</th><th>Category</th><th>Battery</th><th>Sales</th><th>Range</th><th>Price</th></tr>${ms.map(([n,,v])=>`<tr style="cursor:default"><td>${n}</td><td>${v[0].cat}</td><td>${v[0].bat}</td><td>${fmt(sum(v,x=>x.sales))}</td><td>${fmt(wavg(v,x=>x.range)||v[0].range)} km</td><td>$${fmt(v[0].price)}</td></tr>`).join('')}</table></div></div>`}
+return h+SRC}
+function mfrBind(){const q=$('#q');if(q)q.oninput=()=>{Q=q.value;const p=q.selectionStart;route();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
+document.querySelectorAll('th[data-k]').forEach(t=>{const f=()=>{const k=t.dataset.k;SORT=SORT.k===k?{k,d:-SORT.d}:{k,d:-1};route()};t.onclick=f;t.onkeydown=e=>e.key==='Enter'&&f()});
+document.querySelectorAll('tr[data-n]').forEach(t=>{const f=()=>{const n=t.dataset.n;PROF=n;CMP=CMP.includes(n)?CMP.filter(x=>x!==n):[...CMP,n].slice(-3);route()};t.onclick=f;t.onkeydown=e=>e.key==='Enter'&&f()});
+const cm=mfrRows().filter(x=>CMP.includes(x.n));if(cm.length&&$('#cmp')){const ks=[['sales','Sales'],['range','Range'],['kwh','Battery'],['rating','Rating']],mx=ks.map(([k])=>Math.max(...cm.map(x=>x[k])));mk('cmp',{type:'bar',data:{labels:ks.map(k=>k[1]),datasets:cm.map((x,i)=>({label:x.n,data:ks.map(([k],j)=>+(x[k]/mx[j]*100).toFixed(1)),backgroundColor:COL[i]}))},options:{scales:{y:{max:100,title:{display:true,text:'% of top value'}}}}})}}
+function battery(){const t=Object.keys(BT);return`<h1>Battery Technology Explorer</h1><p class="sub">Select technologies to compare on the radar. Scores are relative 1–10 ratings.</p><div class="card bt"><b>Compare:</b> ${t.map(k=>`<button class="btn s ${BSEL.includes(k)?'on':''}" data-b="${k}" aria-pressed="${BSEL.includes(k)}">${k}</button>`).join('')}</div>
+<div class="grid g2" style="margin-top:14px"><div class="card"><h2>Radar comparison</h2><div class="ch" style="height:360px"><canvas id="rd" role="img" aria-label="Battery radar chart"></canvas></div></div><div class="card"><h2>Share of EV sales by battery, 2020–2025</h2><div class="ch" style="height:360px"><canvas id="bs"></canvas></div></div></div>
+<div class="card tw" style="margin-top:14px"><table><tr><th>Technology</th><th>Energy density</th><th>Cost</th><th>Fast-charge</th><th>Lifespan</th><th>Data status</th></tr>${t.map(k=>{const b=BT[k],c=b.st[0]==='M'?'':b.st[0]==='E'?'e':'p';return`<tr style="cursor:default"><td><b>${k}</b><br><span class="note">${b.n}</span></td><td>${b.ed}</td><td>${b.cost}</td><td>${b.chg}</td><td>${b.life}</td><td><span class="tag ${c}">${b.st}</span></td></tr>`}).join('')}</table></div>
+<p class="note">Values are approximate, publicly reported typical ranges, shown for illustration. "Estimate" and "Projection" rows are not measured market data. Share chart uses the synthetic sample dataset.</p>`}
+function batCharts(){document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;BSEL=BSEL.includes(k)?BSEL.filter(x=>x!==k):[...BSEL,k];route()});
+mk('rd',{type:'radar',data:{labels:AX,datasets:BSEL.map(k=>({label:k,data:BT[k].sc,borderColor:COL[Object.keys(BT).indexOf(k)],backgroundColor:COL[Object.keys(BT).indexOf(k)]+'33'}))},options:{scales:{r:{min:0,max:10,ticks:{backdropColor:'transparent'},pointLabels:{}}}}});
+mk('bs',{type:'bar',data:{labels:YRS,datasets:Object.keys(BT).map((k,i)=>({label:k,data:YRS.map(y=>{const a=D.filter(r=>r.year===y);return+(sum(a.filter(r=>r.bat===k),r=>r.sales)/sum(a,r=>r.sales)*100).toFixed(1)}),backgroundColor:COL[i]}))},options:{scales:{x:{stacked:true},y:{stacked:true,max:100,title:{display:true,text:'% of sales'}}}}})}
+function globalP(){const r=filt();let h=`<h1>Global Manufacturing Insights</h1><p class="sub">Production by country and region.</p>`+filterBar();if(!r.length)return h+EMPTY;
+const co=grp(r,'country',v=>sum(v,x=>x.sales)).sort((a,b)=>b[1]-a[1]),T=sum(co,x=>x[1]);
+return h+`<div class="grid g2"><div class="card"><h2>Manufacturing map</h2>${mapSvg(r)}</div><div class="card"><h2>Production by country</h2><div class="ch"><canvas id="g1"></canvas></div></div><div class="card"><h2>Regional trend</h2><div class="ch"><canvas id="g2"></canvas></div></div><div class="card"><h2>Concentration</h2><table>${co.map(c=>`<tr style="cursor:default"><td>${CN[c[0]]}</td><td>${fmt(c[1])}</td><td>${(c[1]/T*100).toFixed(1)}%</td></tr>`).join('')}</table><ul class="ins"><li>Top-3 countries hold <b>${(sum(co.slice(0,3),x=>x[1])/T*100).toFixed(0)}%</b> of volume.</li><li>Expansion signal: ${(()=>{const g=grp(filt(true),'country',v=>{const a=sum(v.filter(x=>x.year===2020),x=>x.sales)||1;return sum(v.filter(x=>x.year===2025),x=>x.sales)/a}).sort((a,b)=>b[1]-a[1])[0];return g?`<b>${CN[g[0]]}</b> grew ${g[1].toFixed(1)}× from 2020 to 2025.`:'—'})()}</li></ul></div></div>${SRC}`}
+function globCharts(){const r=filt();if(!r.length)return;const co=grp(r,'country',v=>sum(v,x=>x.sales)).sort((a,b)=>b[1]-a[1]);mk('g1',{type:'bar',data:{labels:co.map(c=>CN[c[0]]),datasets:[{label:'Vehicles',data:co.map(c=>c[1]),backgroundColor:COL[0]}]},options:{indexAxis:'y',plugins:{legend:{display:false}}}});
+const b=filt(true),rg=[...new Set(Object.values(REG))];mk('g2',{type:'line',data:{labels:YRS,datasets:rg.map((g,i)=>({label:g,borderColor:COL[i],data:YRS.map(y=>sum(b.filter(x=>x.year===y&&REG[x.country]===g),x=>x.sales)),tension:.3}))}})}
+function sust(){const b=filt(true);return`<h1>Sustainability & Research Insights</h1><p class="sub">Illustrative indicators from the sample dataset.</p>`+filterBar()+`<div class="grid k">${kpi('Est. tailpipe CO₂ avoided (cum.)',fmt(sum(filt(true),r=>r.sales)*2.3/1e6*1)+' Mt')}${kpi('Range gain 2020→2025','+'+((wavg(b.filter(x=>x.year===2025),x=>x.range)/wavg(b.filter(x=>x.year===2020),x=>x.range)-1)*100).toFixed(0)+'%')}${kpi('Avg price change',((wavg(b.filter(x=>x.year===2025),x=>x.price)/wavg(b.filter(x=>x.year===2020),x=>x.price)-1)*100).toFixed(0)+'%')}</div>
+<div class="grid g2"><div class="card"><h2>Driving range over time by category</h2><div class="ch"><canvas id="s1"></canvas></div></div><div class="card"><h2>Affordability vs adoption</h2><div class="ch"><canvas id="s2"></canvas></div></div><div class="card"><h2>EV sales by region</h2><div class="ch"><canvas id="s3"></canvas></div></div>
+<div class="card"><h2>Research findings & policy notes</h2><ul class="ins"><li>In this sample, falling average prices coincide with rising sales; affordable LFP and Sodium-Ion chemistries expand the addressable market.</li><li>Range improvements reduce charging frequency, a key adoption barrier – supporting investment in fast charging.</li><li>Policy implication: incentives linked to grid decarbonisation and battery recycling maximise climate benefit.</li></ul>
+<p class="note"><b>Important:</b> lifecycle environmental impact depends on electricity sources, battery manufacturing, and vehicle usage. The CO₂ figure is a simple illustrative estimate (assumed 2.3 t tailpipe CO₂ avoided per vehicle-year, applied to annual sales as a proxy), not a verified measurement.</p></div></div>${SRC}`}
+function sustCharts(){const b=filt(true);mk('s1',{type:'line',data:{labels:YRS,datasets:uniq('cat').map((c,i)=>({label:c,borderColor:COL[i],data:YRS.map(y=>{const a=b.filter(x=>x.year===y&&x.cat===c);return a.length?Math.round(wavg(a,x=>x.range)):null}),tension:.3,spanGaps:true}))},options:{scales:{y:{title:{display:true,text:'km'}}}}});
+mk('s2',{type:'scatter',data:{datasets:[{label:'Year (avg price vs total sales)',data:YRS.map(y=>({x:Math.round(wavg(b.filter(x=>x.year===y),x=>x.price)),y:sum(b.filter(x=>x.year===y),x=>x.sales)})),backgroundColor:COL[4],pointRadius:7}]},options:{scales:{x:{title:{display:true,text:'Avg price USD'}},y:{title:{display:true,text:'Sales'}}}}});
+const rg=[...new Set(Object.values(REG))];mk('s3',{type:'bar',data:{labels:YRS,datasets:rg.map((g,i)=>({label:g,backgroundColor:COL[i],data:YRS.map(y=>sum(b.filter(x=>x.year===y&&REG[x.country]===g),x=>x.sales))}))},options:{scales:{x:{stacked:true},y:{stacked:true}}}})}
+const about=()=>`<h1>About VoltDrive</h1><div class="card"><p>VoltDrive Analytics is a demonstration EV market analytics platform for strategy directors, BI managers and sustainable-mobility researchers.</p><ul class="ins"><li><b>Dataset:</b> synthetic, 2020–2025, ${D.length} records across ${M.length} models and ${Object.keys(MF).length} fictional manufacturers.</li><li><b>Units:</b> vehicles per year, km, kWh, USD, rating 1–5.</li><li><b>Calculations:</b> sums for sales; sales-weighted averages for range, capacity, price and rating; market share = manufacturer sales ÷ filtered total.</li><li><b>Insights:</b> rule-based summaries of the filtered data – no live AI service is connected.</li><li><b>Battery specs:</b> approximate public ranges; estimates and projections are labelled.</li></ul><p class="note">Replace the <code>M</code> array with a real dataset to analyse actual figures.</p></div>`;
+// ---------- ROUTER ----------
+const R={home:[home],dashboard:[dashboard,dashCharts],manufacturers:[manufacturers,mfrBind],battery:[battery,batCharts],global:[globalP,globCharts],sustainability:[sust,sustCharts],about:[about]};
+function route(){const p=(location.hash.slice(1)||'home');const pg=R[p]?p:'home';document.querySelectorAll('nav a.l').forEach(a=>a.classList.toggle('on',a.dataset.p===pg));nav.classList.remove('open');
+try{$('#app').innerHTML=R[pg][0]();if(['dashboard','manufacturers','global','sustainability'].includes(pg))bindBar();if(R[pg][1])R[pg][1]()}catch(e){$('#app').innerHTML=`<div class="card empty"><h2>Something went wrong</h2><p>${e.message}</p></div>`;console.error(e)}}
+$('#th').onclick=()=>{document.documentElement.dataset.theme=th()?'light':'dark';route()};
+addEventListener('hashchange',()=>{scrollTo(0,0);route()});
+if(typeof Chart==='undefined')$('#app').innerHTML='<div class="card empty"><h2>Charts failed to load</h2><p>Check your connection and reload.</p></div>';else route();
+</script></body></html>
